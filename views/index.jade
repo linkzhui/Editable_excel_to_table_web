@@ -1,0 +1,52 @@
+doctype html
+html(lang='en')
+  head
+    title= title
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js')
+    script.
+      $(document).ready(function(){
+      $(document).ready(function(){
+      $('#click').click(function(){
+      $.ajax({
+      url: "fileUpload",
+      type: 'POST',
+      cache: false,
+      data: new FormData($('#excel_file_upload')[0]),
+      processData: false,
+      contentType: false,
+      dataType:"json",
+      });
+      $("#table").attr('style','visibility:show');
+      $("#download").attr('style','visibility:show');
+      });
+      });
+      });
+  body
+    form#excel_file_upload
+      input(type='file', name='fileUpload')
+      br
+      input#click(type='button', value='submit')
+    table#table(border='1', style='visibility:hidden')
+      tr
+        td(contenteditable='true', colspan='4') Some merged cell
+      tr
+        td(contenteditable='true') This
+        td(contenteditable='true') is
+        td(contenteditable='true') a
+        td(contenteditable='true') Test
+      tr
+        td(contenteditable='true') Fee
+        td(contenteditable='true') Fi
+        td(contenteditable='true') Fo
+        td(contenteditable='true') Fum
+      tr
+        td(contenteditable='true') Foo
+        td(contenteditable='true')
+        td(contenteditable='true') Bar
+        td(contenteditable='true')
+      tr
+        td(contenteditable='true')
+        td(contenteditable='true') Baz
+        td(contenteditable='true') ☃
+        td(contenteditable='true') Qux
+    button#download(style='visibility:hidden') Download

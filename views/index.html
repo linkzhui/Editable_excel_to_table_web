@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Upload with AJAX</title>
+    <script src="jquery-3.2.1.min.js"></script>
+    <script lang="javascript" src="dist/xlsx.full.min.js"></script>
+    <style>
+        table,th,td{
+            border:1px solid mediumvioletred;
+        }
+    </style>
+</head>
+<body>
+<!-- SheetJS js-xlsx library -->
+<script type="text/javascript" src="//rawgit.com/SheetJS/js-xlsx/master/shim.js"></script>
+<script type="text/javascript" src="//rawgit.com/SheetJS/js-xlsx/master/dist/xlsx.full.min.js"></script>
+<!-- FileSaver.js is the library of choice for Chrome -->
+<script type="text/javascript" src="//rawgit.com/eligrey/Blob.js/master/Blob.js"></script>
+<script type="text/javascript" src="//rawgit.com/eligrey/FileSaver.js/master/FileSaver.js"></script>
+
+<!-- FileSaver doesn't work in older IE and newer Safari; Downloadify is the flash fallback -->
+<script type="text/javascript" src="swfobject.js"></script>
+<script type="text/javascript" src="downloadify.min.js"></script>
+<script type="text/javascript" src="base64.min.js"></script>
+<script>
+
+    function s2ab(s) {
+        if(typeof ArrayBuffer !== 'undefined') {
+            var buf = new ArrayBuffer(s.length);
+            var view = new Uint8Array(buf);
+            for (var i=0; i!=s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        } else {
+            var buf = new Array(s.length);
+            for (var i=0; i!=s.length; ++i) buf[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+    }
+    function export_table_to_excel(id, type, fn) {
+        var wb = XLSX.utils.table_to_book(document.getElementById(id), {sheet:"Sheet JS"});
+        var wbout = XLSX.write(wb, {bookType:type, bookSST:true, type: 'binary'});
+        var fname = fn || 'test.' + type;
+        try {
+            saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), fname);
+        } catch(e) { if(typeof console != 'undefined') console.log(e, wbout); }
+        return wbout;
+    }
+    function doit(type, fn) { return export_table_to_excel('table', type || 'xlsx', fn); }
+    </script>
+<form>
+    <h1>Upload a File:</h1>
+    <input type="file" id="myfile" name="myfile">
+    <br>
+    <button type="button" id="submit" name="submit" value="Upload File Now" onclick="myFunction()">submit</button>
+</form>
+
+<table id = 'table' style ='visibility:hidden;width:100%'>
+    <tbody id = 'tbody'></tbody>
+</table>
+
+<input type="submit" value="Export to XLSX!" onclick="doit('xlsx');" style = 'visibility: hidden' id="download">
+
+
+<p id="status">status of the upload process</p>
+
+
+
+<script>
+    function myFunction(){
+        var statusDiv = document.getElementById("status");
+        statusDiv.innerHTML = '123145';
+
+        var tbody = document.getElementById('tbody');
+        var fileSelect = document.getElementById('myfile');
+
+        event.preventDefault();
+
+        statusDiv.innerHTML = 'Uploading.......';
+
+        // Get the files from the input
+        var files = fileSelect.files;
+
+        // Create a new FormData object.
+        var formData = new FormData();
+
+        //Grab just one file, since we are not allowing multiple file uploads
+        var file = files[0];
+
+        if (file.size >= 5000000 ) {
+            statusDiv.innerHTML = 'This file is larger than 5MB. Sorry, it cannot be uploaded.';
+            return;
+        }
+
+        // Add the file to the request.
+        formData.append('excel_file', file, file.name);
+
+        // Set up the AJAX request.
+        var xhr = new XMLHttpRequest();
+
+        //response from the text
+        xhr.onreadystatechange = function(){
+            if(this.readyState == 4 && this.status == 200)
+            {
+                statusDiv.innerHTML=this.responseText;
+            }
+        };
+        // Open the connection.
+        xhr.open('POST', '/', true);
+        // Set up a handler for when the request finishes.
+//        xhr.onload = function () {
+//            if (xhr.status === 200) {
+//                statusDiv.innerHTML = 'The file uploaded successfully.......';
+//            } else {
+//                statusDiv.innerHTML = 'An error occurred while uploading the file. Try again';
+//            }
+//        };
+
+        // Send the Data.
+        xhr.send(formData);
+         xhr.onreadystatechange = function(){
+             if(this.readyState == 4 && this.status == 200)
+             {
+                 var response=JSON.parse(this.responseText);
+                 statusDiv.innerHTML='upload successful';
+                 var tr = '<tr>'+'<th contenteditable=\'true\'>'+'Name'+'</th>'+'<th contenteditable=\'true\'>'+'Number'+'</th>'+'<th contenteditable=\'true\'>'+'Engli_Num'+'</th>'+'</tr>';
+
+                 for(var i = 0;i<response.length;i++)
+                 {
+                    tr += '<tr><td contenteditable=\'true\'>'+response[i].Name+'</td>'+'<td contenteditable=\'true\'>'+response[i].Number+'</td>'+'<td contenteditable=\'true\'>'+response[i].Engli_Num+'</td></tr>';
+                 }
+                    tbody.innerHTML=tr;
+                    document.getElementById('table').setAttribute('style','visibility: visible');
+                    document.getElementById('download').setAttribute('style','visibility: visible');
+
+             }
+         }
+
+    }
+</script>
+</body>
+</html>
